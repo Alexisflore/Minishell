@@ -1,0 +1,11 @@
+a
+b
+build
+include
+leaks_ignore.supp
+lib
+Makefile
+minishell
+README.md
+src
+valgrind.sh
