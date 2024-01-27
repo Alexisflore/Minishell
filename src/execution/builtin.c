@@ -71,7 +71,7 @@ static char	*search_path_builtin(t_env *env_list, char *command)
 	return (NULL);
 }
 
-static int	execute_builtin(t_master *master, t_exec *exec, t_builtin_type type)
+int	execute_builtin(t_master *master, t_exec *exec, t_builtin_type type)
 {
 	if (type == T_CD)
 		return (ft_cd(exec->argc, exec->argv, master));
@@ -90,7 +90,7 @@ static int	execute_builtin(t_master *master, t_exec *exec, t_builtin_type type)
 	return (T_ERROR);
 }
 
-static bool	execute_command(t_master *master, t_exec *exec)
+bool	find_path_name(t_master *master, t_exec *exec)
 {
 	struct stat	s;
 

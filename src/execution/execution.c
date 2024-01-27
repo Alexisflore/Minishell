@@ -47,98 +47,15 @@ void	prepare_execution(t_master *master, t_token *token, t_exec *exec)
 	update_executable_path(master->exec, master->env_list);
 	g_exit_status = 0;
 	type = exectype(master);
-	type = execute_command_or_builtin(master, master->exec);
+	// type = execute_command_or_builtin(master, master->exec);
 	if (type == T_ERROR && g_exit_status == 127)
 	{
 		cleanup_executable(master);
 		return ;
 	}
-
-	exec->pid = NULL;
-	// if (type == T_OTHERS)
-	// {
-	// 	if (token->next && token->next->type == T_PIPE)
-	// 		if (pipe(exec->pipefd) == -1)
-	// 			error_exit(master, "pipe (execute_pipeline)");
-	// 	exec->pid = fork();
-	// 	if (exec->pid == -1)
-	// 		error_exit(master, "fork (execute_pipeline)");
-	// 	if ((token->next && token->next->type == T_RED_OUT)
-	// 		|| (token->next && token->next->type == T_D_RED_OUT)
-	// 		|| (token->next && token->next->type == T_RED_IN))
-	// 		launch_redirection(master, token->next, exec);
-	// 	else if (token && token->type == T_RED_IN)
-	// 		launch_redirection(master, token, exec);
-	// }
 }
 
-// void	child_process_execution(t_master *master, t_token *token, t_exec *exec)
-// {
-// 	if (g_exit_status != 127 && exec->pid == 0)
-// 	{
-// 		if (!exec->first_cmd)
-// 		{
-// 			dup2(exec->old_pipefd[0], STDIN_FILENO);
-// 			close(exec->old_pipefd[0]);
-// 			close(exec->old_pipefd[1]);
-// 		}
-// 		if (token->next && token->next->type == T_PIPE)
-// 		{
-// 			dup2(exec->pipefd[1], STDOUT_FILENO);
-// 			close(exec->pipefd[0]);
-// 			close(exec->pipefd[1]);
-// 		}
-// 		if (master->exec->pathname)
-// 		{
-// 			printf("exec->pathname: %s\n", exec->pathname);
-// 			execute_command(master, master->exec, master->env_list);
-// 		}
-// 		cleanup_before_exit(master);
-// 		cleanup_executable(master);
-// 		exit(g_exit_status);
-// 	}
-// }
-
-// static void	parent_process_execution(t_master *master, t_token **token,
-// 	t_exec *exec)
-// {
-// 	if (exec->pid != 0)
-// 	{
-// 		if (!exec->first_cmd)
-// 		{
-// 			close(exec->old_pipefd[0]);
-// 			close(exec->old_pipefd[1]);
-// 		}
-// 		if ((*token)->next && (*token)->next->type == T_PIPE)
-// 		{
-// 			exec->old_pipefd[0] = exec->pipefd[0];
-// 			exec->old_pipefd[1] = exec->pipefd[1];
-// 			exec->first_cmd = false;
-// 		}
-// 		if ((*token)->next && ((*token)->next->type == T_RED_OUT
-// 		|| (*token)->next->type == T_D_RED_OUT))
-// 		{
-// 				(*token) = (*token)->next->next->next;
-// 				dup2(exec->stdout_fd, STDOUT_FILENO);
-// 				exec->redir = false;
-// 		}
-// 		else if ((*token)->next && (*token)->next->type == T_RED_IN)
-// 		{
-// 			(*token) = (*token)->next->next->next;
-// 			dup2(exec->stdin_fd, STDIN_FILENO);
-// 		}
-// 		else if ((*token)->next)
-// 			*token = (*token)->next->next;
-// 		else
-// 			*token = (*token)->next;
-// 		cleanup_executable(master);
-// 	}
-// }
-
-
-
-
-void	redirection_files(t_args *args, int index)
+void	redirection_files(t_exec *args, int index)
 {
 	int	fd;
 
@@ -155,103 +72,15 @@ void	redirection_files(t_args *args, int index)
 	close(fd);
 }
 
-void	redirection_pipes(t_args *args, int index)
+void	redirection_pipes(t_exec *args, int index)
 {
 	if (index != args->nbcmds - 1)
 		dup2(args->fd[1], STDOUT_FILENO);
 	if (index != 0)
-	{void	waitprocess(t_exec *exec)
-{
-	int	i;
-
-	i = 0;
-	while (i < exec->nbcmds)
-		waitpid(exec->pid[i++], NULL, 0);
+    dup2(args->old_pipes, STDIN_FILENO);
 }
 
-void	ft_freetab(char **tab)
-{
-	int	i;
-
-	if (tab)
-	{
-		i = -1;
-		while (tab[++i])void	waitprocess(t_exec *exec)
-{
-	int	i;
-
-	i = 0;
-	while (i < exec->nbcmds)
-		waitpid(exec->pid[i++], NULL, 0);
-}
-
-void	ft_freetab(char **tab)
-{
-	int	i;
-
-	if (tab)
-	{
-		i = -1;
-		while (tab[++i])
-			free(tab[i]);
-		free(tab);
-	}
-}
-
-void	here_doc(t_exec *exec, char *delim)
-{
-	int		fd;
-	char	*line;
-
-	exec->nbcmds -= 1;
-	exec->in = ".tmp";
-	exec->cmds = exec->cmds->next;
-	exec->flag = O_APPEND;
-	fd = open(".tmp", O_TRUNC | O_CREAT | O_RDWR, 0666);
-	if (fd < 0)
-		exit(127);
-	while (1)
-	{
-		line = get_next_line(0, 0);
-		if (!line || !(ft_strcmp(line, delim)))
-			break ;
-		ft_putstr_fd(line, fd);
-		free(line);
-	}
-	get_next_line(0, 1);
-	free(line);
-	close(fd);
-}// void	here_doc(t_exec *exec, char *delim)
-{
-	int		fd;
-	char	*line;
-
-	exec->nbcmds -= 1;
-	exec->in = ".tmp";
-	exec->cmds = exec->cmds->next;
-	exec->flag = O_APPEND;
-	fd = open(".tmp", O_TRUNC | O_CREAT | O_RDWR, 0666);
-	if (fd < 0)
-		exit(127);
-	while (1)
-	{
-		line = get_next_line(0, 0);
-		if (!line || !(ft_strcmp(line, delim)))
-			break ;
-		ft_putstr_fd(line, fd);
-		free(line);
-	}
-	get_next_line(0, 1);
-	free(line);
-	close(fd);
-}
-		dup2(args->old_pipes, STDIN_FILENO);
-		close(args->old_pipes);
-	}
-	close(args->fd[0]);
-	close(args->fd[1]);
-}
-void	waitprocess(t_exec *exec)
+void	waitprocess(t_exec *exec, t_master *master)
 {
 	int	i;
 
@@ -298,51 +127,41 @@ void	here_doc(t_exec *exec, char *delim)
 	close(fd);
 }
 
-void	*execution(t_master master, int bool, int i)
+void	*execution(t_master *master)
 {
-	master->exec = create_arguments(master, master.token_list);
+  t_builtin_type  type;
+
+	master->exec = create_arguments(master, master->token_list);
 	launch_expansion(master, master->exec);
 	update_executable_path(master->exec, master->env_list);
 	g_exit_status = 0;
 	type = exectype(master);
-	if (!cmd || !*cmd)
-		return (ft_freetab(cmd), exit(1), NULL);
+	if (master->exec || *(master->exec->argv))
+		return (ft_freetab(master->exec), exit(1), NULL);
 	if (type == T_BUILTIN)
-	{
-		while (args->env[++i])
-			execve(pathcmd(args->env[i], cmd[0]), cmd, NULL);
-		ft_printf("pipex: %s: command not found\n", cmd[0]);
-	}
+    execute_command(master, master->exec, master->env_list);
 	else if (type == T_ABSPATH)
 	{
-		if (execve(cmd[0], cmd, NULL))
-			ft_printf("pipex: %s: command not found\n", cmd[0]);
+		if (execve(master->exec->argv[0], master->exec->argv, NULL))
+			ft_printf("pipex: %s: command not found\n", master->exec->argv[0]);
 	}
 	else if (type != T_ERROR)
 	{
-		//exechshshshs
+		if (execute_builtin(master, master->exec, type) == T_ERROR)
+      ft_printf("pipex: %s: command not found\n", master->exec->argv[0]);
 	}
 	else
-		ft_printf("pipex: %s: command not found\n", cmd[0]
-	ft_freetab(cmd);
+		ft_printf("pipex: %s: command not found\n", master->exec->argv[0]);
+	ft_freetab(master->exec);
 	return (NULL);
-}
-
-void	chose_exec(t_args *args, int i)
-{
-	if (ft_strchr(args->cmds[i], '/'))
-		execution(args, 0, i);
-	else
-		execution(args, 1, i);
-	exit(127);
 }
 
 void	proccesses(t_exec *args, t_master *master)
 {
 	int	i;
 
-	i = -1;
-	while (++i < args->nbcmds)
+	i = 0;
+	while (master->token_list)
 	{
 		pipe(args->fd);
 		args->pid[i] = fork();
@@ -352,7 +171,7 @@ void	proccesses(t_exec *args, t_master *master)
 			redirection_pipes(args, i);
 			if (i == 0 || i == args->nbcmds - 1)
 				redirection_files(args, i);
-			chose_exec(args, i);
+			execution(master);
 		}
 		else
 		{
@@ -361,26 +180,28 @@ void	proccesses(t_exec *args, t_master *master)
 				close(args->old_pipes);
 			args->old_pipes = args->fd[0];
 		}
+    master->token_list = master->token_list->next;
+    i++;
 	}
 	close(args->fd[0]);
 	// ft_freetab(args->env);
 }
 
-int	main(int ac, char **av, char **env)
-{
-	static t_args	args = {0};
+// int	main(int ac, char **av, char **env)
+// {
+// 	static t_exec	args = {0};
 
-	initargs(&args, av, env, ac);
-	get_env(&args, env);
-	// if (!ft_strcmp(av[1], "here_doc"))
-	// 	here_doc(&args, ft_strjoin(av[2], "\n"));
-	args.pid = malloc(sizeof(pid_t) * args.nbcmds);
-	if (!args.pid)
-		exit(1);
-	proccesses(&args);
-	waitprocess(&args);
-	free(args.pid);
-}
+// 	initargs(&args, av, env, ac);
+// 	get_env(&args, env);
+// 	// if (!ft_strcmp(av[1], "here_doc"))
+// 	// 	here_doc(&args, ft_strjoin(av[2], "\n"));
+// 	args.pid = malloc(sizeof(pid_t) * args.nbcmds);
+// 	if (!args.pid)
+// 		exit(1);
+// 	proccesses(&args);
+// 	waitprocess(&args);
+// 	free(args.pid);
+// }
 
 void	launch_execution(t_master *master)
 {
@@ -397,7 +218,7 @@ void	launch_execution(t_master *master)
 	free(exec.pid);
 	// while (token)
 	// {
-		prepare_execution(master, token, &exec);
+		// prepare_execution(master, token, &exec);
 
 		// if (g_exit_status == 127)
 		// 	break ;

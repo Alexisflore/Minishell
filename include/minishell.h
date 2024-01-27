@@ -74,7 +74,7 @@ typedef struct s_exec
 	int			argc;
 	char		**argv;
 	char		*pathname;
-	t_token		**cmds;
+	t_token	*cmds;
 	pid_t		*pid;
 	int			fd[2];
 	int			old_pipefd[2];
@@ -108,20 +108,21 @@ void			handle_error_cases(t_exec *exec);
 /* builtin.c */
 
 t_builtin_type	execute_command_or_builtin(t_master *master, t_exec *exec);
-
+bool	          find_path_name(t_master *master, t_exec *exec);
 /* execution_mem.c */
 
 void			free_double_ptr(char **str);
-t_exec			*create_arguments(t_master *master, t_token *token);
+t_exec		*create_arguments(t_master *master, t_token *token);
 
 /* execution_utils.c */
 
-char			**env_list_to_array(t_master *master, t_env *env_list);
-void			init(t_master *mast, t_exec *e, int *s, t_token **t);
-
+char			      **env_list_to_array(t_master *master, t_env *env_list);
+void			      init(t_master *mast, t_exec *e, int *s, t_token **t);
+t_builtin_type  exectype(t_master *master);
 /* execution.c */
 
 void			launch_execution(t_master *master);
+int	      execute_builtin(t_master *master, t_exec *exec, t_builtin_type type);
 
 /* expansion_utils.c */
 

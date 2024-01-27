@@ -63,8 +63,8 @@ void	init(t_master *master, t_exec *exec, int *status, t_token **token)
 	*status = 0;
 	exec->pid = -1;
 	exec->first_cmd = true;
-	exec->pipefd[0] = -1;
-	exec->pipefd[1] = -1;
+	// exec->pipefd[0] = -1;
+	// exec->pipefd[1] = -1;
 	exec->argc = 0;
 	exec->cmds = master->token_list;
 	// *token = master->token_list;
@@ -148,4 +148,32 @@ void	here_doc(t_exec *exec, char *delim)
 	get_next_line(0, 1);
 	free(line);
 	close(fd);
+}
+
+t_builtin_type  exectype(t_master *master)
+{
+  t_builtin_type type;
+
+  if (master->exec->argc == 0)
+    return (T_ERROR);
+  type = inspect_token(master->exec->argv[0]);
+  if (type == T_ERROR || !ft_strcmp(master->exec->argv[0], ".")
+		|| !ft_strcmp(master->exec->argv[0], ".."))
+    {
+      handle_error_cases(master->exec);
+      return (T_ERROR);
+    }
+  if (type == T_BUILTIN)
+  {
+    if (master->exec->argv[0][0] == '/')
+      return (T_ABSPATH);
+    else
+    {
+      if (find_path_name(master, master->exec) == false)
+        return (T_ERROR);
+    }
+  }
+  // else if (type == T_ERROR)
+  //   return (T_ERROR);
+  return (type);
 }
