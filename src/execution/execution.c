@@ -6,17 +6,17 @@
 /*   By: alfloren <alfloren@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/31 21:20:24 by ladloff           #+#    #+#             */
-/*   Updated: 2024/01/26 17:47:01 by alfloren         ###   ########.fr       */
+/*   Updated: 2024/01/29 17:46:41 by alfloren         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
-#include <sys/wait.h>
 #include "minishell.h"
 #include <fcntl.h>
 #include <errno.h>
+#include <string.h>
 
 void	print_token(t_token *token)
 {
@@ -38,7 +38,7 @@ static void	execute_command(t_master *master, t_exec *exec, t_env *env_list)
 	error_exit(master, "execve (execute_command)");
 }
 
-void	prepare_execution(t_master *master, t_token *token, t_exec *exec)
+void	prepare_execution(t_master *master, t_token *token)
 {
 	t_builtin_type	type;
 
@@ -77,82 +77,87 @@ void	redirection_pipes(t_exec *args, int index)
 	if (index != args->nbcmds - 1)
 		dup2(args->fd[1], STDOUT_FILENO);
 	if (index != 0)
-    dup2(args->old_pipes, STDIN_FILENO);
-}
-
-void	waitprocess(t_exec *exec, t_master *master)
-{
-	int	i;
-
-	i = 0;
-	while (i < exec->nbcmds)
-		waitpid(exec->pid[i++], NULL, 0);
-}
-
-void	ft_freetab(char **tab)
-{
-	int	i;
-
-	if (tab)
 	{
-		i = -1;
-		while (tab[++i])
-			free(tab[i]);
-		free(tab);
+		dup2(args->old_pipes, STDIN_FILENO);
+		close(args->old_pipes);
 	}
+	close(args->fd[0]);
+	close(args->fd[1]);
 }
 
-void	here_doc(t_exec *exec, char *delim)
-{
-	int		fd;
-	char	*line;
+// void	waitprocess(t_master *master)
+// {
+// 	int	i;
 
-	exec->nbcmds -= 1;
-	exec->in = ".tmp";
-	exec->cmds = exec->cmds->next;
-	exec->flag = O_APPEND;
-	fd = open(".tmp", O_TRUNC | O_CREAT | O_RDWR, 0666);
-	if (fd < 0)
-		exit(127);
-	while (1)
-	{
-		line = get_next_line(0, 0);
-		if (!line || !(ft_strcmp(line, delim)))
-			break ;
-		ft_putstr_fd(line, fd);
-		free(line);
-	}
-	get_next_line(0, 1);
-	free(line);
-	close(fd);
-}
+// 	i = 0;
+// 	while (i < master->exec->nbcmds)
+// 		waitpid(master->exec->pid[i++], NULL, 0);
+// }
+
+// void	ft_freetab(char **tab)
+// {
+// 	int	i;
+
+// 	if (tab)
+// 	{
+// 		i = -1;
+// 		while (tab[++i])
+// 			free(tab[i]);
+// 		free(tab);
+// 	}
+// }
+
+// void	here_doc(t_exec *exec, char *delim)
+// {
+// 	int		fd;
+// 	char	*line;
+
+// 	exec->nbcmds -= 1;
+// 	exec->in = ".tmp";
+// 	exec->cmds = exec->cmds->next;
+// 	exec->flag = O_APPEND;
+// 	fd = open(".tmp", O_TRUNC | O_CREAT | O_RDWR, 0666);
+// 	if (fd < 0)
+// 		exit(127);
+// 	while (1)
+// 	{
+// 		line = get_next_line(0, 0);
+// 		if (!line || !(ft_strcmp(line, delim)))
+// 			break ;
+// 		ft_putstr_fd(line, fd);
+// 		free(line);
+// 	}
+// 	get_next_line(0, 1);
+// 	free(line);
+// 	close(fd);
+// }
 
 void	*execution(t_master *master)
 {
-  t_builtin_type  type;
+	t_builtin_type	type;
 
 	master->exec = create_arguments(master, master->token_list);
 	launch_expansion(master, master->exec);
 	update_executable_path(master->exec, master->env_list);
 	g_exit_status = 0;
 	type = exectype(master);
-	if (master->exec || *(master->exec->argv))
-		return (ft_freetab(master->exec), exit(1), NULL);
+	// if (master->exec || *(master->exec->argv))
+	// 	return (ft_freetab(master->exec->argv), exit(1), NULL);
 	if (type == T_BUILTIN)
-    execute_command(master, master->exec, master->env_list);
+			execute_command(master, master->exec, master->env_list);
 	else if (type == T_ABSPATH)
 	{
 		if (execve(master->exec->argv[0], master->exec->argv, NULL))
-			ft_printf("pipex: %s: command not found\n", master->exec->argv[0]);
+			printf("pipex: %s: command not found\n", master->exec->argv[0]);
 	}
 	else if (type != T_ERROR)
 	{
 		if (execute_builtin(master, master->exec, type) == T_ERROR)
-      ft_printf("pipex: %s: command not found\n", master->exec->argv[0]);
+			printf("pipex: %s: command not found\n", master->exec->argv[0]);
 	}
 	else
-		ft_printf("pipex: %s: command not found\n", master->exec->argv[0]);
-	ft_freetab(master->exec);
+		printf("pipex: %s: command not found\n", master->exec->argv[0]);
+	ft_freetab(master->exec->argv);
 	return (NULL);
 }
 
@@ -163,6 +168,11 @@ void	proccesses(t_exec *args, t_master *master)
 	i = 0;
 	while (master->token_list)
 	{
+		if (master->token_list->type == T_PIPE)
+		{
+			master->token_list = master->token_list->next;
+			continue ;
+		}
 		pipe(args->fd);
 		args->pid[i] = fork();
 		if (args->pid[i] == 0)
@@ -180,8 +190,8 @@ void	proccesses(t_exec *args, t_master *master)
 				close(args->old_pipes);
 			args->old_pipes = args->fd[0];
 		}
-    master->token_list = master->token_list->next;
-    i++;
+		master->token_list = master->token_list->next;
+		i++;
 	}
 	close(args->fd[0]);
 	// ft_freetab(args->env);
@@ -207,14 +217,15 @@ void	launch_execution(t_master *master)
 {
 	t_exec		exec;
 	int			status;
-	t_token		*token;
+	// t_token		*token;
 
-	init(master, &exec, &status, &token);
+	init(master, &exec, &status);
 	exec.pid = malloc(sizeof(pid_t) * exec.nbcmds);
 	if (!exec.pid)
 		ft_error_exit(master, "malloc (launch_execution)", ENOMEM);
+	master->exec = &exec;
 	proccesses(&exec, master);
-	waitprocess(&exec, master);
+	waitprocess(master->exec);
 	free(exec.pid);
 	// while (token)
 	// {

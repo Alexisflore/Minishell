@@ -1,4 +1,4 @@
-build/cleanup.o: src/cleanup.c include/minishell.h \
+build/lexer/lexer_utils.o: src/lexer/lexer_utils.c include/minishell.h \
   lib/libft/include/libft.h
 
 include/minishell.h:

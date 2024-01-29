@@ -6,7 +6,7 @@
 /*   By: alfloren <alfloren@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/18 11:59:28 by ladloff           #+#    #+#             */
-/*   Updated: 2024/01/25 11:26:01 by alfloren         ###   ########.fr       */
+/*   Updated: 2024/01/29 17:18:24 by alfloren         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,14 +19,14 @@
 
 int	g_exit_status = 0;
 
-static void print_tokens(t_token *token)
-{
-	while (token)
-	{
-		printf("token: %u , data: %s\n", token->type, token->data);
-		token = token->next;
-	}
-}
+// static void print_tokens(t_token *token)
+// {
+// 	while (token)
+// 	{
+// 		printf("token: %u , data: %s\n", token->type, token->data);
+// 		token = token->next;
+// 	}
+// }
 
 int	main(void)
 {
@@ -50,8 +50,8 @@ int	main(void)
 			free(master.line_read);
 			continue ;
 		}
-		print_tokens(master.token_list);
-		// launch_execution(&master);
+		// print_tokens(master.token_list);
+		launch_execution(&master);
 		// free_token_list(master.token_list);
 	}
 }

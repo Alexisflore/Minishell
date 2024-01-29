@@ -6,7 +6,7 @@
 /*   By: alfloren <alfloren@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/12 20:33:30 by ladloff           #+#    #+#             */
-/*   Updated: 2024/01/26 16:03:30 by alfloren         ###   ########.fr       */
+/*   Updated: 2024/01/29 14:17:57 by alfloren         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,35 +58,6 @@ char	**env_list_to_array(t_master *master, t_env *env_list)
 	return (array[i] = NULL, array);
 }
 
-void	init(t_master *master, t_exec *exec, int *status, t_token **token)
-{
-	*status = 0;
-	exec->pid = -1;
-	exec->first_cmd = true;
-	// exec->pipefd[0] = -1;
-	// exec->pipefd[1] = -1;
-	exec->argc = 0;
-	exec->cmds = master->token_list;
-	// *token = master->token_list;
-	exec->in = "/dev/stdin";
-	exec->out = "/dev/stdout";
-	exec->old_pipes = -1;
-	exec->flag = O_TRUNC;
-	exec->stdout_fd= dup(STDOUT_FILENO);
-	exec->stdin_fd = dup(STDIN_FILENO);
-	exec->nbcmds = nbr_command(master);
-}
-// void	initexec(t_master master, t_exec *exec, int *status, t_token **token)
-// {
-// 	exec->nbcmds = nbr
-// 	exec->env = env;
-
-// 	exec->in = av[1];
-// 	exec->out = av[ac - 1];
-// 	exec->old_pipes = -1;
-// 	exec->flag = O_TRUNC;
-// }
-
 int	nbr_command(t_master *master)
 {
 	t_token	*token;
@@ -103,6 +74,35 @@ int	nbr_command(t_master *master)
 	return (nb + 1);
 }
 
+void	init(t_master *master, t_exec *exec, int *status)
+{
+	*status = 0;
+	// exec->pid = -1;
+	exec->first_cmd = true;
+	// exec->pipefd[0] = -1;
+	// exec->pipefd[1] = -1;
+	exec->argc = 0;
+	exec->cmds = master->token_list;
+	// *token = master->token_list;
+	exec->in = "/dev/stdin";
+	exec->out = "/dev/stdout";
+	exec->old_pipes = -1;
+	exec->flag = O_TRUNC;
+	exec->stdout_fd = dup(STDOUT_FILENO);
+	exec->stdin_fd = dup(STDIN_FILENO);
+	exec->nbcmds = nbr_command(master);
+}
+// void	initexec(t_master master, t_exec *exec, int *status, t_token **token)
+// {
+// 	exec->nbcmds = nbr
+// 	exec->env = env;
+
+// 	exec->in = av[1];
+// 	exec->out = av[ac - 1];
+// 	exec->old_pipes = -1;
+// 	exec->flag = O_TRUNC;
+// }
+
 void	waitprocess(t_exec *exec)
 {
 	int	i;
@@ -114,7 +114,7 @@ void	waitprocess(t_exec *exec)
 
 void	ft_freetab(char **tab)
 {
-	int	i;
+	int i;
 
 	if (tab)
 	{
@@ -150,30 +150,30 @@ void	here_doc(t_exec *exec, char *delim)
 	close(fd);
 }
 
-t_builtin_type  exectype(t_master *master)
+t_builtin_type	exectype(t_master *master)
 {
-  t_builtin_type type;
+	t_builtin_type	type;
 
-  if (master->exec->argc == 0)
-    return (T_ERROR);
-  type = inspect_token(master->exec->argv[0]);
-  if (type == T_ERROR || !ft_strcmp(master->exec->argv[0], ".")
+	if (master->exec->argc == 0)
+		return (T_ERROR);
+	type = inspect_token(master->exec->argv[0]);
+	if (type == T_ERROR || !ft_strcmp(master->exec->argv[0], ".")
 		|| !ft_strcmp(master->exec->argv[0], ".."))
-    {
-      handle_error_cases(master->exec);
-      return (T_ERROR);
-    }
-  if (type == T_BUILTIN)
-  {
-    if (master->exec->argv[0][0] == '/')
-      return (T_ABSPATH);
-    else
-    {
-      if (find_path_name(master, master->exec) == false)
-        return (T_ERROR);
-    }
-  }
-  // else if (type == T_ERROR)
-  //   return (T_ERROR);
-  return (type);
+	{
+		handle_error_cases(master->exec);
+		return (T_ERROR);
+	}
+	if (type == T_BUILTIN)
+	{
+		if (master->exec->argv[0][0] == '/')
+			return (T_ABSPATH);
+		else
+		{
+			if (find_path_name(master, master->exec) == false)
+				return (T_ERROR);
+		}
+	}
+	return (type);
 }
+// else if (type == T_ERROR)
+//   return (T_ERROR);

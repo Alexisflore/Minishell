@@ -6,7 +6,7 @@
 /*   By: alfloren <alfloren@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/15 16:10:09 by ladloff           #+#    #+#             */
-/*   Updated: 2024/01/26 15:12:48 by alfloren         ###   ########.fr       */
+/*   Updated: 2024/01/29 10:10:08 by alfloren         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,7 @@
 #include "minishell.h"
 #include "libft.h"
 
-static t_builtin_type	inspect_token(char *arg)
+t_builtin_type	inspect_token(char *arg)
 {
 	size_t					i;
 	t_builtin_type			type;
@@ -118,25 +118,25 @@ bool	find_path_name(t_master *master, t_exec *exec)
 	return (true);
 }
 
-t_builtin_type	execute_command_or_builtin(t_master *master, t_exec *exec)
-{
-	t_builtin_type	type;
+// t_builtin_type	execute_command_or_builtin(t_master *master, t_exec *exec)
+// {
+// 	t_builtin_type	type;
 
-	if (exec->argc == 0)
-		return (T_BUILTIN);
-	type = inspect_token(exec->argv[0]);
-	if (type == T_ERROR || !ft_strcmp(exec->argv[0], ".")
-		|| !ft_strcmp(exec->argv[0], ".."))
-	{
-		handle_error_cases(exec);
-		return (T_ERROR);
-	}
-	else if (type != T_BUILTIN)
-	{
-		g_exit_status = execute_builtin(master, exec, type);
-		return (type);
-	}
-	else if (!execute_command(master, exec))
-		return (T_ERROR);
-	return (T_BUILTIN);
-}
+// 	if (exec->argc == 0)
+// 		return (T_BUILTIN);
+// 	type = inspect_token(exec->argv[0]);
+// 	if (type == T_ERROR || !ft_strcmp(exec->argv[0], ".")
+// 		|| !ft_strcmp(exec->argv[0], ".."))
+// 	{
+// 		handle_error_cases(exec);
+// 		return (T_ERROR);
+// 	}
+// 	else if (type != T_BUILTIN)
+// 	{
+// 		g_exit_status = execute_builtin(master, exec, type);
+// 		return (type);
+// 	}
+// 	else if (!execute_command(master, exec))
+// 		return (T_ERROR);
+// 	return (T_BUILTIN);
+// }

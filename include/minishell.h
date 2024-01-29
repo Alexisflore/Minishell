@@ -6,7 +6,7 @@
 /*   By: alfloren <alfloren@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/04/18 11:59:04 by  ladloff          #+#    #+#             */
-/*   Updated: 2024/01/26 15:12:13 by alfloren         ###   ########.fr       */
+/*   Updated: 2024/01/29 14:46:31 by alfloren         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,8 +15,24 @@
 
 # include <stdbool.h>
 # include <sys/types.h>
+#include <sys/wait.h>
+#include "libft.h"
 
 # define OP 5
+# ifndef BUFFER_SIZE
+#  define BUFFER_SIZE 1
+# endif
+
+t_list	*ft_lstlast(t_list *stash);
+void	extract_line(t_list *stash, char **line);
+size_t	ft_strlen(const char *str);
+int		found_line(t_list *stash);
+void	generate_line(t_list *stash, char **line);
+void	add_to_stash(t_list **stash, char *buff, int read_count);
+void	read_and_stash(int fd, t_list **stash);
+void	clean_stash(t_list **stash);
+void	free_stash(t_list *stash);
+char	*get_next_line(int fd, int state);
 
 # define ESTR_QUOTE "minishell: syntax error: unmatched quote\n"
 # define ESTR_DQUOTE "minishell: syntax error: unmatched double quote\n"
@@ -64,7 +80,7 @@ typedef struct s_token
 {
 	t_builtin_type	type;
 	char			*data;
-	char 			**split_args;
+	char			**split_args;
 	struct s_token	*next;
 	struct s_token	*last;
 }	t_token;
@@ -74,7 +90,7 @@ typedef struct s_exec
 	int			argc;
 	char		**argv;
 	char		*pathname;
-	t_token	*cmds;
+	t_token		*cmds;
 	pid_t		*pid;
 	int			fd[2];
 	int			old_pipefd[2];
@@ -108,17 +124,18 @@ void			handle_error_cases(t_exec *exec);
 /* builtin.c */
 
 t_builtin_type	execute_command_or_builtin(t_master *master, t_exec *exec);
-bool	          find_path_name(t_master *master, t_exec *exec);
+bool			find_path_name(t_master *master, t_exec *exec);
+t_builtin_type	inspect_token(char *arg);
 /* execution_mem.c */
 
-void			free_double_ptr(char **str);
+void		free_double_ptr(char **str);
 t_exec		*create_arguments(t_master *master, t_token *token);
 
 /* execution_utils.c */
 
-char			      **env_list_to_array(t_master *master, t_env *env_list);
-void			      init(t_master *mast, t_exec *e, int *s, t_token **t);
-t_builtin_type  exectype(t_master *master);
+char			**env_list_to_array(t_master *master, t_env *env_list);
+void			init(t_master *mast, t_exec *e, int *s);
+t_builtin_type	exectype(t_master *master);
 /* execution.c */
 
 void			launch_execution(t_master *master);
@@ -197,6 +214,10 @@ int				ft_export(int argc, char **argv, t_master *master);
 int				ft_pwd(void);
 int				ft_unset(int argc, char **argv, t_master *master);
 
-int 			launch_redirection(t_master *master, t_token *tmp, t_exec *exec);
+int 			launch_redirection(t_master *master, t_token *tmp);
+
+void			ft_freetab(char **tab);
+void			waitprocess(t_exec *exec);
+
 
 #endif /* MINISHELL_H */

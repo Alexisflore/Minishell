@@ -6,7 +6,7 @@
 /*   By: alfloren <alfloren@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/12 11:50:40 by alfloren          #+#    #+#             */
-/*   Updated: 2024/01/26 11:44:03 by alfloren         ###   ########.fr       */
+/*   Updated: 2024/01/29 12:14:07 by alfloren         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,13 +21,13 @@
 #include <fcntl.h>
 #include "minishell.h"
 
-static void	redirect_input(t_master *master, char *file, t_exec **exec)
+static void	redirect_input(t_master *master, char *file)
 {
 	int	fd;
 
 	printf("file: %s\n", file);
 	fd = open(file, O_RDONLY);
-	(*exec)->redir = true;
+	// s
 	if (fd == -1)
 		error_exit(master, "open redirect input");
 	if (dup2(fd, STDIN_FILENO) == -1)
@@ -36,7 +36,7 @@ static void	redirect_input(t_master *master, char *file, t_exec **exec)
 }
 
 static void	redirect_output(t_master *master, char *file,
-	int append, t_exec **exec)
+	int append)
 {
 	int	flags;
 	int	fd;
@@ -53,7 +53,7 @@ static void	redirect_output(t_master *master, char *file,
 	close(fd);
 }
 
-int	launch_redirection(t_master *master, t_token *tmp, t_exec *exec)
+int	launch_redirection(t_master *master, t_token *tmp)
 {
 	t_token	*token;
 
@@ -62,22 +62,22 @@ int	launch_redirection(t_master *master, t_token *tmp, t_exec *exec)
 	{
 		if (token->type == T_RED_IN)
 		{
-			redirect_input(master, token->next->data, &exec);
+			redirect_input(master, token->next->data);
 			return (EXIT_FAILURE);
 		}
 		if (token->type == T_RED_OUT)
 		{
-			redirect_output(master, token->next->data, 0, &exec);
+			redirect_output(master, token->next->data, 0);
 			return (EXIT_FAILURE);
 		}
 		if (token->type == T_D_RED_OUT)
 		{
-			redirect_output(master, token->next->data, 1, &exec);
+			redirect_output(master, token->next->data, 1);
 			return (EXIT_FAILURE);
 		}
 		token = token->next;
 	}
-	exec->redir = false;
+	// exec->redir = false;
 	return (EXIT_SUCCESS);
 }
 
